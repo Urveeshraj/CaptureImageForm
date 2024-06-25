@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visitor Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: url('bg-image.jpg') no-repeat center center fixed;
+            background-size: cover;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+            color: #555;
+        }
+        input[type="text"], input[type="email"], input[type="tel"], input[type="date"], textarea {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0 20px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 1em;
+        }
+        textarea {
+            resize: vertical;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .logo {
+            display: block;
+            margin: 0 auto 20px;
+            max-width: 100px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .gender-options {
+            display: flex;
+            justify-content: space-between;
+        }
+        .gender-options div {
+            flex: 1;
+            display: flex;
+            align-items: center;
+        }
+        .gender-options input {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="logo.svg" alt="Barista Logo" class="logo">
+        <h1>Visitor Form</h1>
+        <form action="/submit_visitor_form" method="post" id="Visitorform">
+            <div class="form-group">
+                <label for="full_name">Full Name:</label>
+                <input type="text" id="full_name" name="full_name" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email Address:</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="phone">Phone Number:</label>
+                <input type="tel" id="phone" name="phone" required>
+            </div>
+            <div class="form-group">
+                <label for="position">Purpose of Visit:</label>
+                <input type="text" id="position" name="position" required>
+            </div>
+            <div class="form-group">
+                <label for="experience">Address Information:</label>
+                <textarea id="experience" name="experience" rows="5" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="date">Date :</label>
+                <input type="date" id="date" name="date" required>
+            </div>
+            <div class="form-group">
+                <label>Gender :</label>
+                <div class="gender-options">
+                    <div>
+                        <input type="radio" id="male" name="gender" value="male" required>
+                        <label for="male">Male</label>
+                    </div>
+                    <div>
+                        <input type="radio" id="female" name="gender" value="female">
+                        <label for="female">Female</label>
+                    </div>
+                    <div>
+                        <input type="radio" id="other" name="gender" value="other">
+                        <label for="other">Other</label>
+                    </div>
+                    <div>
+                        <input type="radio" id="prefer_not_to_say" name="gender" value="prefer_not_to_say">
+                        <label for="prefer_not_to_say">Prefer not to say</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="video">Capture Image:</label>
+                    <video id="video" width="100%" height="auto" autoplay></video>
+                    <button type="button" id="capture">Capture Image</button>
+                    <canvas id="canvas" style="display: none;"></canvas>
+                    <input type="hidden" id="imageData" name="imageData">
+                </div>
+                <button type="submit">Submit Application</button>
+            </form>
+        </div>
+    </body>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('canvas');
+            const captureButton = document.getElementById('capture');
+            const imageDataInput = document.getElementById('imageData');
+            const VisitorForm = document.getElementById('VisitorForm');
+ 
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then((stream) => {
+                    video.srcObject = stream;
+                })
+                .catch((err) => {
+                    console.error("Error accessing camera: ", err);
+                });
+    
+            captureButton.addEventListener('click', () => {
+                const context = canvas.getContext('2d');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const imageData = canvas.toDataURL('image/png');
+                imageDataInput.value = imageData;
+                alert('Image captured successfully!');
+            });
+    
+
+            VisitorForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+    
+                if (validateForm()) {
+                    const formData = new FormData(VisitorForm);
+                    
+
+                    for (let [key, value] of formData.entries()) {
+                        console.log(`${key}:`, value);
+                    }
+    
+                    alert('Form submitted successfully!');
+                    VisitorForm.reset(); 
+                } else {
+                    alert('Please fill out all required fields correctly.');
+                }
+            });
+    
+            function validateForm() {
+                const fullName = document.getElementById('full_name').value.trim();
+                const email = document.getElementById('email').value.trim();
+                const phone = document.getElementById('phone').value.trim();
+                const position = document.getElementById('position').value;
+                const experience = document.getElementById('experience').value.trim();
+                const date = document.getElementById('date').value.trim();
+                const gender = document.querySelector('input[name="gender"]:checked');
+                const imageData = document.getElementById('imageData').value;
+    
+                if (fullName === '' || email === '' || phone === '' || position === '' || experience === '' || date === '' || !gender || imageData === '') {
+                    return false;
+                }
+    
+
+                const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+                if (!emailRegex.test(email)) {
+                    return false;
+                }
+    
+                const phoneRegex = /^[0-9]{10}$/;
+                if (!phoneRegex.test(phone)) {
+                    return false;
+                }
+    
+                return true;
+            }
+        });
+    </script>
+    </html>
